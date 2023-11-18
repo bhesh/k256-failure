@@ -1,8 +1,7 @@
 use der::{DecodePem, Encode};
 use ecdsa::{Signature, VerifyingKey};
 use hex_literal::hex;
-use sha2::Sha256;
-use signature::{digest::Digest, hazmat::PrehashVerifier};
+use signature::{hazmat::PrehashVerifier, Verifier};
 use std::fs;
 use x509_cert::{request::CertReq, Certificate};
 
@@ -56,18 +55,20 @@ fn by_x509() {
     )
     .unwrap();
 
-    let prehash = Sha256::digest(req.info.to_der().unwrap());
+    // Works
+    let msg = req.info.to_der().unwrap();
     let sig = Signature::<k256::Secp256k1>::from_der(req.signature.raw_bytes()).unwrap();
     print!("Testing signature 1 ... ");
-    match key.verify_prehash(&prehash[..], &sig) {
+    match key.verify(&msg, &sig) {
         Ok(_) => println!("verification successful"),
         Err(e) => println!("failed: {}", e),
     }
 
-    let prehash = Sha256::digest(cert.tbs_certificate.to_der().unwrap());
+    // Fails
+    let msg = cert.tbs_certificate.to_der().unwrap();
     let sig = Signature::<k256::Secp256k1>::from_der(cert.signature.raw_bytes()).unwrap();
     print!("Testing signature 2 ... ");
-    match key.verify_prehash(&prehash[..], &sig) {
+    match key.verify(&msg, &sig) {
         Ok(_) => println!("verification successful"),
         Err(e) => println!("failed: {}", e),
     }

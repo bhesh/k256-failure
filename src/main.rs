@@ -6,7 +6,7 @@ use signature::{digest::Digest, hazmat::PrehashVerifier};
 use std::fs;
 use x509_cert::{request::CertReq, Certificate};
 
-fn by_hex() {
+fn by_scalars() {
     let key: VerifyingKey<k256::Secp256k1> = VerifyingKey::from_sec1_bytes(
         &hex!(
             "04bc72f5435bc947f3b79132dab7946159b28be519068960cfb10300c7124776d
@@ -42,7 +42,7 @@ fn by_hex() {
     }
 }
 
-fn by_file() {
+fn by_x509() {
     let pem = fs::read("testdata/secp256k1-sha256-crt.pem").unwrap();
     let cert = Certificate::from_pem(pem).unwrap();
     let pem = fs::read("testdata/secp256k1-sha256-req.pem").unwrap();
@@ -74,8 +74,8 @@ fn by_file() {
 }
 
 fn main() {
-    println!("Testing with x509 objects");
-    by_file();
+    println!("Test with x509 objects");
+    by_x509();
     println!("\nTest with raw scalars");
-    by_hex();
+    by_scalars();
 }
